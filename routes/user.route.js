@@ -1,15 +1,15 @@
 const express = require('express');
-const userController = require('./../controllers/user.controller');
+const { UserController } = require('./../controllers');
+const { ValidateUser } = require('../middlewares');
 
-const userRouter = express.Router();
+const UserRouter = express.Router();
 
-userRouter.post('/newUser', userController.createUser);
-userRouter.get('/users', userController.getAllUsers);
+UserRouter.post('/newUser', ValidateUser.validateOnCreate, UserController.createUser);
+UserRouter.get('/users', UserController.getAllUsers);
 
-userRouter
-  .route('/users/:userId')
-  .get(userController.getUserById)
-  .put(userController.updateUserById)
-  .delete(userController.removeUserById);
+UserRouter.route('/users/:userId')
+  .get(UserController.getUserById)
+  .put(ValidateUser.validateOnUpdate, UserController.updateUserById)
+  .delete(UserController.removeUserById);
 
-module.exports = userRouter;
+module.exports = UserRouter;

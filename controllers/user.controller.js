@@ -1,54 +1,48 @@
+const _ = require('lodash');
 const { User } = require('./../models');
 
-module.exports.createUser = async (req, res, next) => {
-  const { body } = req;
+module.exports.createUser = async ({ body }, res, next) => {
   try {
-    const newUser = await User.createUser(body);
-    res.status(201).send(newUser);
+    res.status(201).send(await User.createUser(body));
   } catch (e) {
     next(e);
   }
 };
 
-module.exports.updateUserById = async (req, res, next) => {
-  const {
-    params: { userId },
-    body,
-  } = req;
-  const user = await User.findById(Number(userId));
-
-  if (user) {
-    const updatedUser = await User.updateById(Number(userId), body);
-    return res.status(200).send(updatedUser);
+module.exports.updateUserById = async ({ params: { userId }, body: updateBody }, res, next) => {
+  try {
+    (await User.findById(userId))
+      ? res.status(200).send(await User.updateById(userId, updateBody))
+      : res.status(404).send({ message: `User with email ${userId} not found` });
+  } catch (e) {
+    next(e);
   }
-  res.status(404).send({ message: 'User not found' });
 };
 
-module.exports.getUserById = async (req, res, next) => {
-  const {
-    params: { userId },
-  } = req;
-  const user = await User.findById(Number(userId));
-
-  if (user) {
-    return res.status(200).send(user);
+module.exports.getUserById = async ({ params: { userId } }, res, next) => {
+  try {
+    const user = await User.findById(userId);
+    user ? res.status(200).send(user) : res.status(404).send({ message: `User with email ${userId} not found` });
+  } catch (e) {
+    next(e);
   }
-  res.status(404).send({ message: 'User not found' });
 };
 
-module.exports.removeUserById = async (req, res, next) => {
-  const {
-    params: { userId },
-  } = req;
-
-  const result = await User.removeById(Number(userId));
-  if (result) {
-    return res.status(204).send();
+module.exports.removeUserById = async ({ params: { userId } }, res, next) => {
+  try {
+    (await User.removeById(userId))
+      ? res.status(204).send(`User with email ${userId} deleted`)
+      : res.status(404).send(`User with email ${userId} not found`);
+  } catch (e) {
+    next(e);
   }
-  res.status(404).send('User not found');
 };
 
 module.exports.getAllUsers = async (req, res, next) => {
-  const users = await User.findAll();
-  res.send(users);
+  try {
+    const users = await User.findAll();
+    _.isEmpty(users) ? res.status(404).send('Sorry, no users') : res.status(200).send(users);
+  } catch (e) {
+    next(e);
+  }
 };
