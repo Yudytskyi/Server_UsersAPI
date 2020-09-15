@@ -5,7 +5,7 @@ const User = {
   createUser: async values => {
     try {
       const id = await values.email;
-      const newUser = { ...values };
+      const newUser = await { ...values };
       UsersDB.set(id, newUser);
       delete newUser.password;
       return Promise.resolve(newUser);
@@ -16,11 +16,11 @@ const User = {
 
   updateById: async (id, updateBody) => {
     try {
-      const user = UsersDB.get(id);
-      const updatedUser = _.assign(user, updateBody);
-      delete updatedUser.password;
+      const user = await UsersDB.get(id);
+      const updatedUser = await _.assign(user, updateBody);
       UsersDB.set(id, updatedUser);
-      return Promise.resolve(UsersDB.get(id));
+      delete updatedUser.password;
+      return Promise.resolve(updatedUser);
     } catch (e) {
       throw new Error(e);
     }
@@ -28,7 +28,7 @@ const User = {
 
   findById: async id => {
     try {
-      const user = UsersDB.get(id);
+      const user = await UsersDB.get(id);
       delete user.password;
       return Promise.resolve(user);
     } catch (e) {
